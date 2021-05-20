@@ -1,4 +1,4 @@
-package com.fsdm.wisd.azurefaceapi;
+package com.fsdm.wisd.smartDoor;
 
 import org.junit.Test;
 

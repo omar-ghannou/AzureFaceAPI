@@ -1,4 +1,4 @@
-package com.fsdm.wisd.azurefaceapi;
+package com.fsdm.wisd.smartDoor;
 /*
  **    *** AzureFaceAPI ***
  **   Created by EL KHARROUBI HASSAN
@@ -8,7 +8,7 @@ package com.fsdm.wisd.azurefaceapi;
 
 public interface IdentifyListener {
 
-    public void isVerified(int result);
+     void isVerified(int result);
 
 
 }

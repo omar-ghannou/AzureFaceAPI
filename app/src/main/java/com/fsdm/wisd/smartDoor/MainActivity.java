@@ -1,50 +1,23 @@
-package com.fsdm.wisd.azurefaceapi;
+package com.fsdm.wisd.smartDoor;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import android.Manifest;
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.microsoft.projectoxford.face.FaceServiceClient;
 import com.microsoft.projectoxford.face.FaceServiceRestClient;
-import com.microsoft.projectoxford.face.contract.CreatePersonResult;
-import com.microsoft.projectoxford.face.contract.Face;
-import com.microsoft.projectoxford.face.contract.FaceRectangle;
-import com.microsoft.projectoxford.face.contract.IdentifyResult;
-import com.microsoft.projectoxford.face.contract.Person;
-import com.microsoft.projectoxford.face.contract.PersonGroup;
-import com.microsoft.projectoxford.face.contract.TrainingStatus;
-import com.microsoft.projectoxford.face.rest.ClientException;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements IdentifyListener{
 
@@ -58,16 +31,13 @@ public class MainActivity extends AppCompatActivity implements IdentifyListener{
     ImageView imageView;
     Bitmap imageBitmap;
     private static final FaceServiceRestClient faceServiceClient = new FaceServiceRestClient(API_ENDPOINT, API_KEY);
-    Button Identify;
+    Button Identify,mOpenBtn,mCloseBtn;
 
     static IdentifyTask identifyTask;
 
     private ProgressDialog mProgressDialog;
 
-
-
-
-
+    private SendRequest mSendRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +46,29 @@ public class MainActivity extends AppCompatActivity implements IdentifyListener{
 
         mProgressDialog=new ProgressDialog(this);
 
+        mSendRequest=new SendRequest(this);
+
         Identify = findViewById(R.id.b_identify);
+
+        mOpenBtn=findViewById(R.id.open);
+        mOpenBtn.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainActivity.this, "open", Toast.LENGTH_SHORT).show();
+                mSendRequest.openDoor("open");
+            }
+        });
+
+        mCloseBtn=findViewById(R.id.close);
+        mCloseBtn.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainActivity.this, "close", Toast.LENGTH_SHORT).show();
+                mSendRequest.openDoor("close");
+            }
+        });
 
         imageView = findViewById(R.id.imageView);
         Identify.setOnClickListener(new View.OnClickListener() {
@@ -91,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements IdentifyListener{
                 else{
 
                     capture();
-
 
                 }
 
@@ -136,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements IdentifyListener{
         Log.d("Main",result+" ");
         mProgressDialog.dismiss();
         Toast.makeText(this, result==0? "mal9inax wjah bhad had camara":"l9ina camartak", Toast.LENGTH_SHORT).show();
+        new SendRequest(this).openDoor(result==0?"close":"open");
 
     }
 }

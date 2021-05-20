@@ -1,4 +1,4 @@
-package com.fsdm.wisd.azurefaceapi;
+package com.fsdm.wisd.smartDoor;
 /*
  **    *** AzureFaceAPI ***
  **   Created by EL KHARROUBI HASSAN
@@ -52,7 +52,9 @@ class IdentifyTask  extends AsyncTask<Bitmap, String, Integer> {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-        Face[] faces = new Face[0];
+
+        Face[] faces = new Face[1];
+
         Log.d("Task","start identify");
         try {
 
@@ -70,7 +72,7 @@ class IdentifyTask  extends AsyncTask<Bitmap, String, Integer> {
 
 
         } catch (IOException e) {
-            Log.d("Task","IOException.............");
+            Log.d("Task","IOException............."+e.getMessage());
             e.printStackTrace();
         }
 
@@ -78,19 +80,31 @@ class IdentifyTask  extends AsyncTask<Bitmap, String, Integer> {
         mResult=1;
 
         List<UUID> faceIds = new ArrayList<UUID>();
+
+
         for (Face face: faces) {
+
+            if(face==null){
+
+                Log.d("Task","faces are null");
+                mResult=0;
+                return ;
+            }
+
             faceIds.add(face.faceId);
         }
+
         UUID[] uuids = new UUID[faceIds.size()];
-        IdentifyResult[] identifiedFaces = new IdentifyResult[0]; //range is [1-100], 10 is default
+        IdentifyResult[] identifiedFaces = new IdentifyResult[1]; //range is [1-100], 10 is default
         try {
+
             identifiedFaces = mFaceServiceRestClient.identity(personGroupID,faceIds.toArray(uuids),1);
 
         } catch (ClientException e) {
             //if error occurs
             mResult=0;
 
-            Log.d("Task","client Exception, identifiedFaces............"+identifiedFaces.length +" "+e.getMessage());
+            Log.d("Task","client Exception, identifiedFaces............"+e.getMessage());
             e.printStackTrace();
         } catch (IOException e) {
             mResult=0;
@@ -99,29 +113,42 @@ class IdentifyTask  extends AsyncTask<Bitmap, String, Integer> {
         }
 
 
+        Log.d("Task","length of identifiedfaces "+identifiedFaces.length);
         for (IdentifyResult result: identifiedFaces) {
-            if(result.candidates.size() == 0){
-                Log.d("IdResult","No one is identified");
+
+            if (result.candidates==null)
+            {
+                Log.d("Task","No one is identified");
+                mResult=0;
+                return ;
+
+            }
+
+            if(   result.candidates.size() == 0){
+                Log.d("Task","No one is identified");
+                mResult=0;
+                return ;
+
             }
             else {
                 UUID personId = result.candidates.get(0).personId;
                 Person person = null;
                 try {
+
                     person = mFaceServiceRestClient.getPerson(personGroupID,personId);
+
                 } catch (ClientException e) {
 
                     mResult=0;
                     e.printStackTrace();
+
                 } catch (IOException e) {
                     e.printStackTrace();
                     mResult=0;
                 }
-                Log.d("IdResult",person.name + " is identified");
+                Log.d("Task",person.name + " is identified");
             }
-
         }
-
-
 
     }
 
@@ -131,10 +158,7 @@ class IdentifyTask  extends AsyncTask<Bitmap, String, Integer> {
 
             IdentifyFace(mPersonGroupID,bitmap);
             return mResult;
-
-
     }
-
     @Override
     protected void onPostExecute(Integer integer) {
 
